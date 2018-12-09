@@ -38,14 +38,14 @@ namespace RMays.Aoc2018.Tests
         public void DoItA() // 538
         {
             var day1 = new Day1();
-            Console.WriteLine(day1.SolveA(InputData.Day1a));
+            Console.WriteLine(day1.SolveA(InputData.Day1));
         }
 
         [Test]
         public void DoItB() // 77271
         {
             var day1 = new Day1();
-            Console.WriteLine(day1.SolveB(InputData.Day1a));
+            Console.WriteLine(day1.SolveB(InputData.Day1));
         }
     }
 }

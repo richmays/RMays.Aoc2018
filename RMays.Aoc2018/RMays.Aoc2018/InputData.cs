@@ -8,14 +8,11 @@ namespace RMays.Aoc2018
 {
     public class InputData
     {
-        #region Day0a
-        public const string Day0a = @"";
+        #region Day0
+        public const string Day0 = @"";
         #endregion
-        #region Day0b
-        public const string Day0b = @"";
-        #endregion
-        #region Day1a
-        public const string Day1a = @"-6
+        #region Day1
+        public const string Day1 = @"-6
 -1
 -18
 -10
@@ -1032,8 +1029,5 @@ namespace RMays.Aoc2018
 -11
 -77534";
         #endregion Day 1
-        #region Day1b
-        public const string Day1b = Day1a;
-        #endregion
     }
 }

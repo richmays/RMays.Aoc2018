@@ -44,7 +44,7 @@ namespace RMays.Aoc2018
 
             long runningCount = 0;
             var safety = 0;
-            var foundNums = new List<long>() { 0 };
+            var foundNums = new HashSet<long>() { 0 };
             while (safety < 999999)
             {
                 foreach (var token in myList)
