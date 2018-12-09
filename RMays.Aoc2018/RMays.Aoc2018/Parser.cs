@@ -12,5 +12,10 @@ namespace RMays.Aoc2018
         {
             return input.Split(new char[] { ',', '\r', '\n' }).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
         }
+
+        public static List<string> TokenizeLines(string input)
+        {
+            return input.Split(new char[] { '\r', '\n' }).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
+        }
     }
 }
