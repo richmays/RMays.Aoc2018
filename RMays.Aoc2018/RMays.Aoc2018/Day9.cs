@@ -10,41 +10,62 @@ namespace RMays.Aoc2018
     {
         public long SolveA(string input)
         {
+            return SolveB(input);
+        }
+
+        public long SolveB(string input)
+        {
             // input example:
             //  10 players; last marble is worth 1618 points
             var tokens = Parser.Tokenize(input, ' ');
             var players = int.Parse(tokens[0]);
             var lastMarble = int.Parse(tokens[6]);
 
-            var marbles = new List<int>() { 0 };
-            var scores = new Dictionary<int, int>();
-            for(int i = 1; i <= players; i++)
+            var marbles = new LinkedList<int>();
+            marbles.AddFirst(0);
+            var scores = new Dictionary<int, long>();
+            for (int i = 1; i <= players; i++)
             {
                 scores.Add(i, 0);
             }
 
-            var currPos = 0;
+            LinkedListNode<int> currPos = marbles.First;
             var currPlayer = 1;
-            for(var currMarble = 1; currMarble <= lastMarble; currMarble++)
+            for (var currMarble = 1; currMarble <= lastMarble; currMarble++)
             {
                 if (currMarble % 23 == 0)
                 {
                     // Special rules
-                    var scoreDelta = currMarble;
-                    var removalIndex = (currPos - 7 + marbles.Count()) % marbles.Count();
-                    var marbleToRemove = marbles[removalIndex];
-                    scoreDelta += marbleToRemove;
-                    marbles.Remove(marbleToRemove);
-                    currPos = removalIndex;
-
-                    scores[currPlayer] += scoreDelta;
+                    scores[currPlayer] += currMarble;
+                    for(int i = 0; i < 6; i++)
+                    {
+                        currPos = currPos.Previous;
+                        if (currPos == null)
+                        {
+                            currPos = marbles.Last;
+                        }
+                    }
+                    scores[currPlayer] += currPos.Value;
+                    var removeAt = currPos;
+                    currPos = currPos.Next;
+                    if (currPos == null) currPos = marbles.First;
+                    marbles.Remove(removeAt);
+                    currPos = currPos.Previous;
+                    if (currPos == null) currPos = marbles.Last;
                 }
                 else
                 {
                     // Normal rules
-                    var insertIndex = (currPos + 2) % marbles.Count();
-                    marbles.Insert(insertIndex, currMarble);
-                    currPos = insertIndex;
+                    for (int i = 0; i < 2; i++)
+                    {
+                        currPos = currPos.Next;
+                        if (currPos == null)
+                        {
+                            currPos = marbles.First;
+                        }
+                    }
+
+                    marbles.AddAfter(currPos, currMarble);
                 }
 
                 currPlayer++;
@@ -55,14 +76,6 @@ namespace RMays.Aoc2018
             }
 
             return scores.Values.Max();
-        }
-
-        public long SolveB(string input)
-        {
-            var myList = Parser.Tokenize(input);
-      
-
-            return 0;
         }
     }
 }
