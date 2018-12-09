@@ -10,49 +10,46 @@ namespace RMays.Aoc2018
     {
         public long SolveA(string input)
         {
-            var myList = input.Split(new char[] { ',', '\r', '\n' }).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
+            var myList = Parser.Tokenize(input);
 
             long runningCount = 0;
-            foreach(var token in myList)
+            foreach (var token in myList)
             {
-                var sign = token[0];
-                var mag = long.Parse(token.Substring(1));
-                switch (sign)
-                {
-                    case '+':
-                        runningCount += mag;
-                        break;
-                    case '-':
-                        runningCount -= mag;
-                        break;
-                }
+                runningCount += GetDelta(token);
             }
 
             return runningCount;
         }
 
+        private long GetDelta(string token)
+        {
+            long delta = 0;
+            var sign = token[0];
+            var mag = long.Parse(token.Substring(1));
+            switch (sign)
+            {
+                case '+':
+                    delta = mag;
+                    break;
+                case '-':
+                    delta = -1 * mag;
+                    break;
+            }
+            return delta;
+        }
+
         public long SolveB(string input)
         {
-            var myList = input.Split(new char[] { ',', '\r', '\n' }).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
+            var myList = Parser.Tokenize(input);
 
             long runningCount = 0;
             var safety = 0;
             var foundNums = new List<long>() { 0 };
-            while(safety < 9999)
+            while (safety < 999999)
             {
                 foreach (var token in myList)
                 {
-                    var sign = token[0];
-                    var mag = long.Parse(token.Substring(1));
-                    switch (sign)
-                    {
-                        case '+':
-                            runningCount += mag;
-                            break;
-                        case '-':
-                            runningCount -= mag;
-                            break;
-                    }
+                    runningCount += GetDelta(token);
 
                     if (foundNums.Contains(runningCount))
                     {
@@ -60,7 +57,7 @@ namespace RMays.Aoc2018
                     }
 
                     foundNums.Add(runningCount);
-                    //safety++;
+                    safety++;
                 }
             }
 
