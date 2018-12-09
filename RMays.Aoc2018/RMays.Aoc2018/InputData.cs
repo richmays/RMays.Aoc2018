@@ -3532,5 +3532,8 @@ svosmkcitdbfiyxuphzgsraljq";
 [1518-10-11 00:35] wakes up
 [1518-07-10 00:59] wakes up";
         #endregion
+        #region Day9
+        public const string Day9 = @"429 players; last marble is worth 70901 points";
+        #endregion
     }
 }
