@@ -1033,7 +1033,7 @@ namespace RMays.Aoc2018
 -77534";
         #endregion Day 1
         #region Day1b
-        public const string Day1b = @"";
+        public const string Day1b = Day1a;
         #endregion
     }
 }

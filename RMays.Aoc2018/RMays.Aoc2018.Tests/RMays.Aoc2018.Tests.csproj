@@ -57,6 +57,12 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RMays.Aoc2018\RMays.Aoc2018.csproj">
+      <Project>{9b0f1371-749b-4524-9440-ba1394d98fe1}</Project>
+      <Name>RMays.Aoc2018</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
