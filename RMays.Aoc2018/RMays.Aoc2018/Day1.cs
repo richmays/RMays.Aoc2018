@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RMays.Aoc2018
 {
-    public class Class1
+    public class Day1
     {
     }
 }
