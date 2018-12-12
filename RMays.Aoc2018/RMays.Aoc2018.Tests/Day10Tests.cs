@@ -57,8 +57,6 @@ position=<-3,  6> velocity=< 2, -1>";
             Assert.AreEqual(expectedOutput, result);
         }
 
-        [Test]
-        [TestCase("4, 5, 6", 456)]
 
         public void PartBTests(string input, int expectedOutput)
         {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,7 +37,6 @@ namespace RMays.Aoc2018
             }
 
             int currTime = 0;
-            string bestSoFar = "?";
             var area = CalculateArea(points);
             var prevArea = long.MaxValue;
             while (area < prevArea)
@@ -87,33 +85,23 @@ namespace RMays.Aoc2018
             int maxY = points.Select(p => p.Y).Max();
 
             StringBuilder result = new StringBuilder("");
-
-            using (var fs = new FileStream("c:\\output\\day10.txt", FileMode.Create))
+            for (int y = minY; y <= maxY; y++)
             {
-                using (var writer = new StreamWriter(fs))
+                var subsetPoints = points.Where(p => p.Y == y).Select(p => p.X).ToList();
+                for (int x = minX; x <= maxX; x++)
                 {
-                    var output = new StringBuilder();
-                    for (int y = minY; y <= maxY; y++)
+                    if (subsetPoints.Contains(x))
                     {
-                        output.Clear();
-                        var subsetPoints = points.Where(p => p.Y == y).Select(p => p.X).ToList();
-                        for (int x = minX; x <= maxX; x++)
-                        {
-                            if (subsetPoints.Contains(x))
-                            {
-                                output.Append("#");
-                            }
-                            else
-                            {
-                                output.Append(".");
-                            }
-                        }
-                        writer.WriteLine(output);
+                        result.Append("#");
+                    }
+                    else
+                    {
+                        result.Append(".");
                     }
                 }
+                result.AppendLine();
             }
-
-            return "?"; // result.ToString().TrimEnd();
+            return result.ToString().Trim();
         }
 
         public void Backward(List<Day10_Point> points)
