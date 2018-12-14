@@ -26,6 +26,8 @@ namespace RMays.Aoc2018.Tests
         [TestCase("01245", 5)]
         [TestCase("92510", 18)]
         [TestCase("59414", 2018)]
+        [TestCase("165061", 20181148)]
+        [TestCase("147061", 20283721)]
         public void PartBTests(string input, int expectedOutput)
         {
             var day = new Day14();
@@ -40,7 +42,7 @@ namespace RMays.Aoc2018.Tests
             Console.WriteLine(day.SolveA(InputData.Day14));
         }
 
-        [Test]
+        //[Test]
         public void DoItB() // 20181148 (rank 463)
         {
             var day = new Day14();
