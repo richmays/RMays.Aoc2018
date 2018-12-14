@@ -3917,5 +3917,8 @@ position=< 21492,  42728> velocity=<-2, -4>";
         #region Day11
         public const string Day11 = @"5535";
         #endregion
+        #region Day14
+        public const int Day14 = 165061;
+        #endregion
     }
 }
