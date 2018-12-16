@@ -291,7 +291,7 @@ namespace RMays.Aoc2018
                             spots.MoveTowardsEnemy(new Coords( rowNum, colNum));
 
                             // Attack the weakest adjacent Elf.
-                            spots.Attack(new Coords(rowNum, colNum));
+                            //spots.Attack(new Coords(rowNum, colNum));
 
                             break;
                         case Spot.Elf:
