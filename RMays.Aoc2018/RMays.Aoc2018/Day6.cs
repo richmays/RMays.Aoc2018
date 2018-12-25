@@ -10,7 +10,19 @@ namespace RMays.Aoc2018
     {
         public long SolveA(string input)
         {
+            /*
             var myList = Parser.TokenizeLines(input);
+
+
+            
+            int[,] myarray = new int[1, 200];
+
+
+            foreach(var row in myList)
+            {
+                
+            }
+            */
 
 
 
