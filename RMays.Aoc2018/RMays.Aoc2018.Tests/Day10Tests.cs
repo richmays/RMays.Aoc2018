@@ -73,6 +73,13 @@ position=<-3,  6> velocity=< 2, -1>";
         }
 
         [Test]
+        public void DoItNewMessage() // ?
+        {
+            var day = new Day10();
+            Console.WriteLine(day.SolveA(InputData.Day10b));
+        }
+
+        [Test]
         public void DoItB() // ?
         {
             var day = new Day10();
