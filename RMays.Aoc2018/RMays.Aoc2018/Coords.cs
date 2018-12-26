@@ -18,6 +18,11 @@ namespace RMays.Aoc2018
             Col = col;
         }
 
+        public override string ToString()
+        {
+            return $"{Row}, {Col}";
+        }
+
         public int Row { get; set; }
         public int Col { get; set; }
 
