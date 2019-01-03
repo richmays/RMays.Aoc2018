@@ -59,5 +59,17 @@ namespace RMays.Aoc2018.Tests
             var day = new Day12();
             Console.WriteLine(day.SolveA(InputData.Day12, 50000000000));
         }
+
+        [TestCase(20, 3230)]
+        [TestCase(1000, 88304)]
+        [TestCase(2000, 176304)]
+        [TestCase(50000000000, 4400000000304)]
+        [Test]
+        public void TryingNewData(long generations, long expectedOutput)
+        {
+            var day = new Day12();
+            var result = day.SolveA(InputData.Day12b, generations);
+            Assert.AreEqual(expectedOutput, result);
+        }
     }
 }

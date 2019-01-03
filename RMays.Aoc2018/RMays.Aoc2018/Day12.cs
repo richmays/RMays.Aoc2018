@@ -8,6 +8,8 @@ namespace RMays.Aoc2018
 {
     public class Pots
     {
+        private const bool EnableShortcutCode = true;
+
         private HashSet<int> PotsSet;
         private int LowPlant;
         private int HighPlant;
@@ -76,7 +78,6 @@ namespace RMays.Aoc2018
                     PotsSet.Add(pot);
                 }
 
-
                 /*
                 if (gen % 1000 == 0)
                 {
@@ -84,70 +85,75 @@ namespace RMays.Aoc2018
                 }
                 */
 
-                var plantSum = this.PlantSum();
-                long sumDiff = plantSum - prevSum;
-                //Console.WriteLine($"{gen}: {plantSum} ({sumDiff})");
-                prevSum = plantSum;
-
-                var firstCycleOffset = 0;
-                var secondCycleOffset = 0;
-
-                var foundMatch = false;
-                int i;
-                for (i = 0; i < sumDiffs.Count - 5; i++)
+                if (EnableShortcutCode)
                 {
-                    if (sumDiffs[i] != CycleToFind[0]) continue;
-                    foundMatch = true;
-                    for (int j = 1; j < 5; j++)
+                    var plantSum = this.PlantSum();
+                    long sumDiff = plantSum - prevSum;
+                    //Console.WriteLine($"{gen}: {plantSum} ({sumDiff})");
+                    prevSum = plantSum;
+
+                    var firstCycleOffset = 0;
+                    var secondCycleOffset = 0;
+
+                    var foundMatch = false;
+                    int i;
+
+                    for (i = 0; i < sumDiffs.Count - 5; i++)
                     {
-                        if (sumDiffs[i + j] != CycleToFind[j])
+                        if (sumDiffs[i] != CycleToFind[0]) continue;
+                        foundMatch = true;
+                        for (int j = 1; j < 5; j++)
                         {
-                            foundMatch = false;
-                            break;
-                        }
-
-                        if (foundMatch)
-                        {
-                            if (firstCycleOffset == 0)
+                            if (sumDiffs[i + j] != CycleToFind[j])
                             {
-                                //Console.WriteLine($"gen: {gen}; First loop found; offset is {i}!");
-                                firstCycleOffset = i;
+                                foundMatch = false;
+                                break;
                             }
-                            else if (secondCycleOffset == 0 && i > firstCycleOffset)
+
+                            if (foundMatch)
                             {
-                                //Console.WriteLine($"gen: {gen}; Second loop found; offset is {i}!");
-                                secondCycleOffset = i;
-
-                                // NOTE: This won't work if the differences don't converge to a single number!
-                                // We'll need to calculate the sum of the differences for the entire cycle,
-                                //  then divide by the cycle length.
-                                // Then we use that number as the multiplier in teh 'return' statement.
-
-
-                                // Now let's do some clever math to find the answer.
-
-                                var lengthOfCycle = (secondCycleOffset - firstCycleOffset);
-                                // Cycle starts at 'firstCycleOffset'.
-
-                                // How many more steps do we need to take to get to the end?
-                                var stepsNeeded = generations - i - 1;
-                                while(stepsNeeded % lengthOfCycle != 0)
+                                if (firstCycleOffset == 0)
                                 {
-                                    // Take a step back.
-                                    i--;
-                                    stepsNeeded = generations - i;
+                                    //Console.WriteLine($"gen: {gen}; First loop found; offset is {i}!");
+                                    firstCycleOffset = i;
                                 }
+                                else if (secondCycleOffset == 0 && i > firstCycleOffset)
+                                {
+                                    //Console.WriteLine($"gen: {gen}; Second loop found; offset is {i}!");
+                                    secondCycleOffset = i;
 
-                                return Sums[i] + (stepsNeeded * sumDiffs[i]);
+                                    // Now let's do some clever math to find the answer.
+
+                                    var lengthOfCycle = (secondCycleOffset - firstCycleOffset);
+                                    if (lengthOfCycle == 1)
+                                    {
+                                        var stepsNeeded = generations - i - 1;
+                                        return Sums[i] + (stepsNeeded * sumDiffs[i]);
+                                    }
+                                    else
+                                    {
+                                        // We'll need to calculate the sum of the differences for the entire cycle,
+                                        //  then divide by the cycle length.
+                                        // Then we use that number as the multiplier in the 'return' statement.
+
+                                        // It's possible we'll never get here.
+                                        return -1;
+                                    }
+                                }
                             }
                         }
                     }
-                }
 
-                Sums.Add(plantSum);
-                sumDiffs.Add(sumDiff);
-                CycleToFind.RemoveAt(0);
-                CycleToFind.Add(sumDiff);
+                    Sums.Add(plantSum);
+                    sumDiffs.Add(sumDiff);
+                    CycleToFind.RemoveAt(0);
+                    CycleToFind.Add(sumDiff);
+                }
+                else if (generations > 20000)
+                {
+                    // Takes too long!
+                    return -1;
+                }
             }
 
             return PlantSum();
