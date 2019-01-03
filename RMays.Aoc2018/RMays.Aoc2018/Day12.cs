@@ -43,20 +43,18 @@ namespace RMays.Aoc2018
             HighPlant = PotsSet.Max();
         }
 
-        public void Go(List<string> rules, long generations)
+        public void Go(HashSet<string> rules, long generations)
         {
             int prevSum = 0;
-            for (var gen = 0; gen < generations; gen++)
+
+            for (var gen = 1; gen <= generations; gen++)
             {
                 CalcHighLow();
                 var NewPotsSet = new HashSet<int>();
-                for (int index = LowPlant - 1; index <= HighPlant + 1; index++)
+                string orientation = ".....";
+                for (int index = LowPlant - 2; index <= HighPlant + 1; index++)
                 {
-                    string orientation = "";
-                    for (int currPlant = index - 2; currPlant <= index + 2; currPlant++)
-                    {
-                        orientation += (this.GetPot(currPlant) ? '#' : '.');
-                    }
+                    orientation = orientation.Substring(1) + (this.GetPot(index+2) ? '#' : '.');
 
                     if (rules.Contains(orientation))
                     {
@@ -68,6 +66,12 @@ namespace RMays.Aoc2018
                 foreach (var pot in NewPotsSet)
                 {
                     PotsSet.Add(pot);
+                }
+
+
+                if (gen % 1000 == 0)
+                {
+                    Console.WriteLine($"gen: {gen}, sum: {this.PlantSum()}: {this}");
                 }
 
                 /*
@@ -118,7 +122,7 @@ namespace RMays.Aoc2018
 
             // ...## => #
             var rulesText = Parser.TokenizeLines(input);
-            var rules = new List<string>();
+            var rules = new HashSet<string>();
             foreach(var line in rulesText)
             {
                 var splitLine = line.Split(' ').ToList();

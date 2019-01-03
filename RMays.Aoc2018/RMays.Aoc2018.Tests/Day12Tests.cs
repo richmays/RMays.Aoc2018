@@ -26,20 +26,22 @@ namespace RMays.Aoc2018.Tests
 ##.## => #
 ###.. => #
 ###.# => #
-####. => #", 325)]
-        public void PartATests(string input, int expectedOutput)
+####. => #", 20,  325)]
+        public void PartATests(string input, long generations, int expectedOutput)
         {
             var day = new Day12();
-            var result = day.SolveA(input, 20);
+            var result = day.SolveA(input, generations);
             Assert.AreEqual(expectedOutput, result);
         }
 
+        [TestCase(20, 4386)]
+        [TestCase(1000, 110166)]
+        [TestCase(2000, 219166)]
         [Test]
-        public void PartATestsRealData()
+        public void PartATestsRealData(long generations, int expectedOutput)
         {
-            var expectedOutput = 4386;
             var day = new Day12();
-            var result = day.SolveA(InputData.Day12, 20);
+            var result = day.SolveA(InputData.Day12, generations);
             Assert.AreEqual(expectedOutput, result);
         }
 
@@ -51,10 +53,10 @@ namespace RMays.Aoc2018.Tests
         }
 
         [Test]
-        public void DoItB() // ?
+        public void DoItB() // 5450000001166 (takes way too long; is there a programmatic way to do it?)
         {
             var day = new Day12();
-            Console.WriteLine(day.SolveA(InputData.Day12, 5000));
+            Console.WriteLine(day.SolveA(InputData.Day12, 10000));
             //Console.WriteLine(day.SolveA(InputData.Day12, 50000000000));
         }
     }
