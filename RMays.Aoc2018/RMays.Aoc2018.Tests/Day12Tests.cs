@@ -37,8 +37,9 @@ namespace RMays.Aoc2018.Tests
         [TestCase(20, 4386)]
         [TestCase(1000, 110166)]
         [TestCase(2000, 219166)]
+        [TestCase(50000000000, 5450000001166)]
         [Test]
-        public void PartATestsRealData(long generations, int expectedOutput)
+        public void PartATestsRealData(long generations, long expectedOutput)
         {
             var day = new Day12();
             var result = day.SolveA(InputData.Day12, generations);
@@ -53,11 +54,10 @@ namespace RMays.Aoc2018.Tests
         }
 
         [Test]
-        public void DoItB() // 5450000001166 (takes way too long; is there a programmatic way to do it?)
+        public void DoItB() // 5450000001166
         {
             var day = new Day12();
-            Console.WriteLine(day.SolveA(InputData.Day12, 10000));
-            //Console.WriteLine(day.SolveA(InputData.Day12, 50000000000));
+            Console.WriteLine(day.SolveA(InputData.Day12, 50000000000));
         }
     }
 }

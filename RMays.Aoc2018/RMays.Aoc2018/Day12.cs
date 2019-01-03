@@ -43,9 +43,17 @@ namespace RMays.Aoc2018
             HighPlant = PotsSet.Max();
         }
 
-        public void Go(HashSet<string> rules, long generations)
+        public long Go(HashSet<string> rules, long generations)
         {
-            int prevSum = 0;
+            long prevSum = 0;
+            var CycleToFind = new List<long>();
+            var Sums = new List<long>();
+            for(int i = 0; i < 5; i++)
+            {
+                CycleToFind.Add(0);
+            }
+
+            var sumDiffs = new List<long>();
 
             for (var gen = 1; gen <= generations; gen++)
             {
@@ -69,20 +77,83 @@ namespace RMays.Aoc2018
                 }
 
 
+                /*
                 if (gen % 1000 == 0)
                 {
                     Console.WriteLine($"gen: {gen}, sum: {this.PlantSum()}: {this}");
                 }
-
-                /*
-                var plantSum = this.PlantSum();
-                Console.WriteLine($"{gen}: {plantSum} ({plantSum - prevSum})");
-                prevSum = plantSum;
                 */
+
+                var plantSum = this.PlantSum();
+                long sumDiff = plantSum - prevSum;
+                //Console.WriteLine($"{gen}: {plantSum} ({sumDiff})");
+                prevSum = plantSum;
+
+                var firstCycleOffset = 0;
+                var secondCycleOffset = 0;
+
+                var foundMatch = false;
+                int i;
+                for (i = 0; i < sumDiffs.Count - 5; i++)
+                {
+                    if (sumDiffs[i] != CycleToFind[0]) continue;
+                    foundMatch = true;
+                    for (int j = 1; j < 5; j++)
+                    {
+                        if (sumDiffs[i + j] != CycleToFind[j])
+                        {
+                            foundMatch = false;
+                            break;
+                        }
+
+                        if (foundMatch)
+                        {
+                            if (firstCycleOffset == 0)
+                            {
+                                //Console.WriteLine($"gen: {gen}; First loop found; offset is {i}!");
+                                firstCycleOffset = i;
+                            }
+                            else if (secondCycleOffset == 0 && i > firstCycleOffset)
+                            {
+                                //Console.WriteLine($"gen: {gen}; Second loop found; offset is {i}!");
+                                secondCycleOffset = i;
+
+                                // NOTE: This won't work if the differences don't converge to a single number!
+                                // We'll need to calculate the sum of the differences for the entire cycle,
+                                //  then divide by the cycle length.
+                                // Then we use that number as the multiplier in teh 'return' statement.
+
+
+                                // Now let's do some clever math to find the answer.
+
+                                var lengthOfCycle = (secondCycleOffset - firstCycleOffset);
+                                // Cycle starts at 'firstCycleOffset'.
+
+                                // How many more steps do we need to take to get to the end?
+                                var stepsNeeded = generations - i - 1;
+                                while(stepsNeeded % lengthOfCycle != 0)
+                                {
+                                    // Take a step back.
+                                    i--;
+                                    stepsNeeded = generations - i;
+                                }
+
+                                return Sums[i] + (stepsNeeded * sumDiffs[i]);
+                            }
+                        }
+                    }
+                }
+
+                Sums.Add(plantSum);
+                sumDiffs.Add(sumDiff);
+                CycleToFind.RemoveAt(0);
+                CycleToFind.Add(sumDiff);
             }
+
+            return PlantSum();
         }
 
-        public int PlantSum()
+        public long PlantSum()
         {
             return PotsSet.Sum(x => x);
         }
@@ -133,8 +204,7 @@ namespace RMays.Aoc2018
                 }
             }
 
-            myPots.Go(rules, generations);
-            return myPots.PlantSum();
+            return myPots.Go(rules, generations);
         }
     }
 }
