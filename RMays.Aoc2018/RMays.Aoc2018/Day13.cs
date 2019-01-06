@@ -15,6 +15,7 @@ namespace RMays.Aoc2018
             public Path DirectionFacing { get; set; }
             public bool IsCrashed { get; set; }
             public int nextCartTurn = 0; // 0 = left, 1 = straight, 2 = right
+            public int CartId { get; set; }
 
             public Cart()
             {
@@ -23,26 +24,23 @@ namespace RMays.Aoc2018
                 // Everything else needs to be set explicitly.
             }
 
-            public void GoStraight()
+            public void ReverseDirection()
             {
                 switch (DirectionFacing)
                 {
                     case Path.North:
-                        Row--;
+                        DirectionFacing = Path.South;
                         break;
                     case Path.South:
-                        Row++;
+                        DirectionFacing = Path.North;
                         break;
                     case Path.East:
-                        Col++;
+                        DirectionFacing = Path.West;
                         break;
                     case Path.West:
-                        Col--;
+                        DirectionFacing = Path.East;
                         break;
                 }
-
-                // Change direction, if necessary.
-                // I think all this code should be in a 'controller' class.  Hmm.
             }
 
             public void TurnAtIntersection()
@@ -81,6 +79,7 @@ namespace RMays.Aoc2018
             public int Rows { get; set; }
             public int Cols { get; set; }
             public List<Cart> Carts { get; set; }
+            public List<string> Crashes { get; set; }
 
             public Grid(string input)
             {
@@ -90,6 +89,75 @@ namespace RMays.Aoc2018
                 Rows = numRows;
                 Cols = numCols;
                 InitializePathGrid(charGrid);
+                Crashes = new List<string>();
+            }
+
+            public void PrettyPrint()
+            {
+                for(var row = 0; row < Rows; row++)
+                {
+                    for(var col = 0; col < Cols; col++)
+                    {
+                        var cart = Carts.Where(x => x.Row == row && x.Col == col).FirstOrDefault();
+                        if (cart != null)
+                        {
+                            if (cart.IsCrashed)
+                            {
+                                Console.Write("X");
+                            }
+                            else
+                            {
+                                switch (cart.DirectionFacing)
+                                {
+                                    case Path.North:
+                                        Console.Write("^");
+                                        break;
+                                    case Path.South:
+                                        Console.Write("v");
+                                        break;
+                                    case Path.East:
+                                        Console.Write(">");
+                                        break;
+                                    case Path.West:
+                                        Console.Write("<");
+                                        break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            switch(pathGrid[row,col])
+                            {
+                                case Path.All:
+                                    Console.Write("+");
+                                    break;
+                                case Path.EastWest:
+                                    Console.Write("-");
+                                    break;
+                                case Path.NorthSouth:
+                                    Console.Write("|");
+                                    break;
+                                case Path.NorthEast:
+                                    Console.Write("\\");
+                                    break;
+                                case Path.NorthWest:
+                                    Console.Write("/");
+                                    break;
+                                case Path.SouthEast:
+                                    Console.Write("/");
+                                    break;
+                                case Path.SouthWest:
+                                    Console.Write("\\");
+                                    break;
+                                case Path.None:
+                                    Console.Write(" ");
+                                    break;
+                            }
+                        }
+                    }
+                    Console.WriteLine();
+                }
+                Console.WriteLine();
             }
 
             public char[,] GetCharGridFromInput(string input, out int numRows, out int numCols)
@@ -118,6 +186,7 @@ namespace RMays.Aoc2018
 
             private void InitializePathGrid(char[,] charGrid)
             {
+                int currCartId = 0;
                 Carts = new List<Cart>();
                 pathGrid = new Path[Rows, Cols];
                 var cartChars = new Dictionary<char, Path>();
@@ -134,11 +203,13 @@ namespace RMays.Aoc2018
                         {
                             Carts.Add(new Cart
                             {
+                                CartId = currCartId,
                                 Row = row,
                                 Col = col,
                                 DirectionFacing = cartChars[currChar],
                                 IsCrashed = false
                             });
+                            currCartId++;
                         }
 
                         pathGrid[row, col] = GetPathValue(currChar);
@@ -254,6 +325,63 @@ namespace RMays.Aoc2018
                 }
                 return path;
             }
+
+            /// <summary>
+            /// Run 1 tick.
+            /// Each cart moves forward 1 spot, following the turning rules (Left, Straight, Right) at each intersection.
+            /// Carts move in order from top to bottom, left to right.
+            /// </summary>
+            public void ProcessTick()
+            {
+                // Get all the carts, in order from top to bottom, left to right.
+                foreach (var cart in Carts.Where(x => !x.IsCrashed).OrderBy(x => x.Row).ThenBy(x => x.Col))
+                {
+                    switch (cart.DirectionFacing)
+                    {
+                        case Path.North:
+                            cart.Row--;
+                            break;
+                        case Path.South:
+                            cart.Row++;
+                            break;
+                        case Path.East:
+                            cart.Col++;
+                            break;
+                        case Path.West:
+                            cart.Col--;
+                            break;
+                    }
+
+                    // Did we collide with anyone?
+                    foreach (var secondCart in Carts.Where(x => x.CartId != cart.CartId))
+                    {
+                        if (secondCart.IsCrashed) continue;
+                        if (cart.Row == secondCart.Row && cart.Col == secondCart.Col)
+                        {
+                            cart.IsCrashed = true;
+                            secondCart.IsCrashed = true;
+                            //Crashes.Add($"Carts {cart.CartId} and {secondCart.CartId} crashed at {cart.Row},{cart.Col}.");
+                            Crashes.Add($"{cart.Col},{cart.Row}");
+                        }
+                    }
+
+                    // What direction are we facing now?
+                    var spot = pathGrid[cart.Row, cart.Col];
+                    if (spot == Path.All)
+                    {
+                        cart.TurnAtIntersection();
+                    }
+                    else
+                    { 
+                        // If on straightaway, don't change directions.
+                        if (spot != Path.NorthSouth && spot != Path.EastWest)
+                        {
+                            cart.DirectionFacing = (Path)((spot ^ Path.All) - cart.DirectionFacing);
+                            cart.ReverseDirection();
+                        }
+                    }
+                }
+            }
         }
 
         [Flags]
@@ -282,16 +410,27 @@ namespace RMays.Aoc2018
         public string SolveA(string input)
         {
             var myGrid = new Grid(input);
+            //myGrid.PrettyPrint();
+            while (myGrid.Carts.Count(x => x.IsCrashed) == 0)
+            {
+                myGrid.ProcessTick();
+                //myGrid.PrettyPrint();
+            }
 
-            return "?";
+            return myGrid.Crashes.First();
         }
 
-        public long SolveB(string input)
+        public string SolveB(string input)
         {
-            var myList = Parser.Tokenize(input);
-      
+            var myGrid = new Grid(input);
+            while (myGrid.Carts.Count(x => !x.IsCrashed) != 1)
+            {
+                myGrid.ProcessTick();
+            }
 
-            return 456;
+            var cart = myGrid.Carts.Where(x => !x.IsCrashed).First();
+
+            return $"{cart.Col},{cart.Row}";
         }
     }
 }

@@ -35,14 +35,14 @@ namespace RMays.Aoc2018.Tests
         }
 
         [Test]
-        public void DoItA() // ?
+        public void DoItA() // 116,10
         {
             var day = new Day13();
             Console.WriteLine(day.SolveA(InputData.Day13));
         }
 
         [Test]
-        public void DoItB() // ?
+        public void DoItB() // 116,25 (after 143ms, first try.  wow.)
         {
             var day = new Day13();
             Console.WriteLine(day.SolveB(InputData.Day13));
