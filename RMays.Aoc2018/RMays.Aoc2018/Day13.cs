@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RMays.Aoc2018
 {
@@ -24,7 +22,7 @@ namespace RMays.Aoc2018
                 // Everything else needs to be set explicitly.
             }
 
-            public void ReverseDirection()
+            public void TurnAround()
             {
                 switch (DirectionFacing)
                 {
@@ -43,33 +41,61 @@ namespace RMays.Aoc2018
                 }
             }
 
+            public void TurnLeft()
+            {
+                switch (DirectionFacing)
+                {
+                    case Path.North:
+                        DirectionFacing = Path.West;
+                        break;
+                    case Path.South:
+                        DirectionFacing = Path.East;
+                        break;
+                    case Path.East:
+                        DirectionFacing = Path.North;
+                        break;
+                    case Path.West:
+                        DirectionFacing = Path.South;
+                        break;
+                }
+            }
+
+            public void TurnRight()
+            {
+                switch (DirectionFacing)
+                {
+                    case Path.North:
+                        DirectionFacing = Path.East;
+                        break;
+                    case Path.South:
+                        DirectionFacing = Path.West;
+                        break;
+                    case Path.East:
+                        DirectionFacing = Path.South;
+                        break;
+                    case Path.West:
+                        DirectionFacing = Path.North;
+                        break;
+                }
+            }
+
             public void TurnAtIntersection()
             {
-                var currDirections = new Dictionary<Path, int>();
-                currDirections.Add(Path.North, 0);
-                currDirections.Add(Path.East, 1);
-                currDirections.Add(Path.South, 2);
-                currDirections.Add(Path.West, 3);
-                var turnRightDirections = new List<Path> { Path.East, Path.South, Path.West, Path.North };
-                var turnLeftDirections = new List<Path> { Path.West, Path.North, Path.East, Path.South };
-
-                var currIndex = currDirections.Where(x => x.Key == DirectionFacing).First().Value;
-
                 switch (nextCartTurn)
                 {
                     case 0: // left
-                        DirectionFacing = turnLeftDirections[currIndex];
+                        TurnLeft();
                         break;
                     case 1: // straight
                         // do nothing!
                         break;
                     case 2: // right
-                        DirectionFacing = turnRightDirections[currIndex];
+                        TurnRight();
                         break;
                 }
 
                 nextCartTurn++;
-                if (nextCartTurn >= 3) nextCartTurn -= 3;
+                nextCartTurn %= 3;
             }
         }
 
@@ -377,7 +403,7 @@ namespace RMays.Aoc2018
                         if (spot != Path.NorthSouth && spot != Path.EastWest)
                         {
                             cart.DirectionFacing = (Path)((spot ^ Path.All) - cart.DirectionFacing);
-                            cart.ReverseDirection();
+                            cart.TurnAround();
                         }
                     }
                 }

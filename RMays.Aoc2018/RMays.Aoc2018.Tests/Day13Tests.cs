@@ -23,22 +23,19 @@ namespace RMays.Aoc2018.Tests
             var result = day.SolveA(input);
             Assert.AreEqual(expectedOutput, result);
         }
-
-        [Test]
-        [TestCase("4, 5, 6", 456)]
-
-        public void PartBTests(string input, int expectedOutput)
-        {
-            var day = new Day13();
-            var result = day.SolveB(input);
-            Assert.AreEqual(expectedOutput, result);
-        }
-
+        
         [Test]
         public void DoItA() // 116,10
         {
             var day = new Day13();
             Console.WriteLine(day.SolveA(InputData.Day13));
+        }
+
+        [Test]
+        public void SolvedB()
+        {
+            var day = new Day13();
+            Assert.AreEqual("116,25", day.SolveB(InputData.Day13));
         }
 
         [Test]
