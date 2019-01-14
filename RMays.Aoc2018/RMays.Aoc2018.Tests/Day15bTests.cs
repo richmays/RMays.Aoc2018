@@ -88,5 +88,34 @@ namespace RMays.Aoc2018.Tests
             var day = new Day15b();
             Console.WriteLine(day.SolveB(InputData.Day15));
         }
+
+        [TestCase(1, 1, 2, 2, -1)]
+        [TestCase(1, 2, 2, 2, -1)]
+        [TestCase(0, 0, 2, 2, -1)]
+        [TestCase(2, 2, 1, 1, 1)]
+        [TestCase(2, 1, 1, 1, 1)]
+        [TestCase(1, 2, 1, 1, 1)]
+        [TestCase(1, 1, 1, 1, 0)]
+        [TestCase(0, 0, 0, 0, 0)]
+        [TestCase(1, 1, 1, 0, 1)]
+        [TestCase(1, 1, 0, 1, 1)]
+        [TestCase(1, 0, 1, 1, -1)]
+        [TestCase(0, 1, 1, 1, -1)]
+        public void CoordsTests(int row1, int col1, int row2, int col2, int expected)
+        {
+            /*
+            int x = 0;
+            int y = 1;
+            Assert.AreEqual(-1, x.CompareTo(y));
+            Assert.AreEqual(1, y.CompareTo(x));
+            Assert.AreEqual(0, x.CompareTo(x));
+            Assert.AreEqual(0, y.CompareTo(y));
+            */
+
+            var coords1 = new Coords { Row = row1, Col = col1 };
+            var coords2 = new Coords { Row = row2, Col = col2 };
+            Assert.AreEqual(expected, coords1.CompareTo(coords2));
+        }
+
     }
 }

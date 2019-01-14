@@ -16,7 +16,7 @@ namespace RMays.Aoc2018
             public List<Unit> Units { get; set; }
             public int TicksCompleted { get; set; } = 0;
             public bool CombatDone =>
-                TicksCompleted > 100000 ||
+                TicksCompleted > 1 ||
                 Units.Where(x => x.IsAlive).Select(x => x.UnitType).Distinct().Count() <= 1;
             public int CombatScore => TicksCompleted * Units.Where(x => x.IsAlive).Sum(x => x.HP);
 
@@ -53,6 +53,8 @@ namespace RMays.Aoc2018
                 if (adjacentEnemyUnitId == -1)
                 {
                     // Try to move.
+                    // (Moving will never kill a unit.  There's no poison ground, etc.  So we don't need to check for the unit's death after it moves.)
+                    MoveUnit(unit.Id);
 
                     // Are we within range now?
                     adjacentEnemyUnitId = AdjacentEnemyToAttack(unit);
@@ -77,6 +79,209 @@ namespace RMays.Aoc2018
                     this.spotGrid[targetUnit.Row, targetUnit.Col] = Spot.Space;
                 }
             }
+
+            /// <summary>
+            /// Move the unit to wherever it should go.
+            /// </summary>
+            /// <param name="unitId"></param>
+            private void MoveUnit(int unitId)
+            {
+                // Process:
+                // 1. Get all coordinates that are empty squares adjacent to an enemy.
+                // 2. From those, select only the coordinates that can be reached by the current unit.
+                // 3. From those, select the nearest coordinates.
+                // 4. From those, sort by the path (prefer lowest row, then lowest col).
+                // After we've chosen a target coordinate,
+                // 5. Take the step that is first in reading order that would get it the closest.
+
+                var coordTargets = new List<Coords>();
+                var unit = Units.First(x => x.Id == unitId);
+                var enemyType = unit.UnitType == UnitType.Elf ? UnitType.Goblin : UnitType.Elf;
+
+                // 1
+                foreach (var enemyUnit in Units.Where(x => x.IsAlive && x.UnitType == enemyType).ToList())
+                {
+                    if (spotGrid[enemyUnit.Row - 1, enemyUnit.Col] == Spot.Space)
+                    {
+                        coordTargets.Add(new Coords { Row = enemyUnit.Row - 1, Col = enemyUnit.Col });
+                    }
+                    if (spotGrid[enemyUnit.Row, enemyUnit.Col - 1] == Spot.Space)
+                    {
+                        coordTargets.Add(new Coords { Row = enemyUnit.Row, Col = enemyUnit.Col - 1 });
+                    }
+                    if (spotGrid[enemyUnit.Row, enemyUnit.Col + 1] == Spot.Space)
+                    {
+                        coordTargets.Add(new Coords { Row = enemyUnit.Row, Col = enemyUnit.Col + 1 });
+                    }
+                    if (spotGrid[enemyUnit.Row + 1, enemyUnit.Col] == Spot.Space)
+                    {
+                        coordTargets.Add(new Coords { Row = enemyUnit.Row + 1, Col = enemyUnit.Col });
+                    }
+                }
+                coordTargets = coordTargets.Distinct().ToList();
+
+                // 2
+                var allReachableSpots = GetReachableSpots(new Coords { Row = unit.Row, Col = unit.Col });
+                var reachableSpots = allReachableSpots.Keys
+                    .Where(x => coordTargets.Select(y => y.ToString()).Contains(x.ToString()))
+                    .ToList();
+
+
+
+
+                /*
+                int steps;
+                if (IsReachable(new Coords { Row = unit.Row, Col = unit.Col }, coordTargets[0], out steps))
+                {
+                    // Great!  We can reach it in 'steps' steps.
+                }
+                */
+            }
+
+            private Dictionary<Coords, PathData> GetReachableSpots(Coords start)
+            {
+                var toReturn = new Dictionary<Coords, PathData>();
+
+                // Let's not worry about optimization yet.  The simple solution might be good enough.
+                var reached = new Dictionary<string, PathData>();
+
+                var pathData = new PathData();
+                reached.Add(start.ToString(), pathData);
+                pathData.Push(Direction.Up);
+                GetReachableSpotsRecursive(start.Up(), (PathData)pathData.Clone(), reached);
+                pathData.Pop();
+                pathData.Push(Direction.Left);
+                GetReachableSpotsRecursive(start.Left(), (PathData)pathData.Clone(), reached);
+                pathData.Pop();
+                pathData.Push(Direction.Right);
+                GetReachableSpotsRecursive(start.Right(), (PathData)pathData.Clone(), reached);
+                pathData.Pop();
+                pathData.Push(Direction.Down);
+                GetReachableSpotsRecursive(start.Down(), (PathData)pathData.Clone(), reached);
+                pathData.Pop();
+
+                foreach (var key in reached.Keys)
+                {
+                    var keySplit = key.Split(',');
+                    toReturn.Add(new Coords { Row = int.Parse(keySplit[0]), Col = int.Parse(keySplit[1]) }, reached[key]);
+                }
+
+                return toReturn;
+            }
+
+            private void GetReachableSpotsRecursive(Coords start, PathData pathSoFar, Dictionary<string, PathData> reached)
+            {
+                // If this is already in the dictionary, jump out.
+                if (reached.Keys.Contains(start.ToString()))
+                {
+                    if (reached[start.ToString()].CompareTo(pathSoFar) < 0)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        reached.Remove(start.ToString());
+                    }
+                }
+
+                reached.Add(start.ToString(), (PathData)pathSoFar.Clone());
+
+                // If we're not on a space, jump out.
+                if (GetSpot(start) != Spot.Space)
+                {
+                    return;
+                }
+
+                pathSoFar.Push(Direction.Up);
+                GetReachableSpotsRecursive(start.Up(), (PathData)pathSoFar.Clone(), reached);
+                pathSoFar.Pop();
+                pathSoFar.Push(Direction.Left);
+                GetReachableSpotsRecursive(start.Left(), (PathData)pathSoFar.Clone(), reached);
+                pathSoFar.Pop();
+                pathSoFar.Push(Direction.Right);
+                GetReachableSpotsRecursive(start.Right(), (PathData)pathSoFar.Clone(), reached);
+                pathSoFar.Pop();
+                pathSoFar.Push(Direction.Down);
+                GetReachableSpotsRecursive(start.Down(), (PathData)pathSoFar.Clone(), reached);
+                pathSoFar.Pop();
+            }
+
+            /*
+            /// <summary>
+            /// How many steps will it take to reach the target?
+            /// Stop counting at a non-space.
+            /// </summary>
+            /// <param name="start"></param>
+            /// <param name="end"></param>
+            /// <returns></returns>
+            private bool IsReachable(Coords start, Coords end, out int steps)
+            {
+                // Base case check.
+                if (start == end)
+                {
+                    steps = 0;
+                    return true;
+                }
+
+                // Let's not worry about optimization yet.  The simple solution might be good enough.
+                var reached = new Dictionary<string, int>();
+                reached.Add(start.ToString(), 0);
+                IsReachableRecursive(start.Up(), end, 1, reached);
+                IsReachableRecursive(start.Left(), end, 1, reached);
+                IsReachableRecursive(start.Right(), end, 1, reached);
+                IsReachableRecursive(start.Down(), end, 1, reached);
+
+                steps = (reached.Keys.Contains(end.ToString()) ? reached[end.ToString()] : -1);
+                return reached.Keys.Contains(end.ToString());
+            }
+
+            private void IsReachableRecursive(Coords start, Coords end, int stepsSoFar, Dictionary<string, int> reached)
+            {
+                // If this is already in the dictionary, jump out.
+                if (reached.Keys.Contains(start.ToString()))
+                {
+                    if (reached[start.ToString()] <= stepsSoFar)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        reached.Remove(start.ToString());
+                    }
+                }
+
+                reached.Add(start.ToString(), stepsSoFar);
+
+                // If we reached the end, jump out.  (No need to build up the rest of the dictionary.)
+                if (start == end)
+                {
+                    return;
+                }
+
+                // If we're not on a space, jump out.
+                if (GetSpot(start) != Spot.Space)
+                {
+                    return;
+                }
+
+                if (!reached.Keys.Contains(start.Up().ToString()))
+                {
+                    IsReachableRecursive(start.Up(), end, stepsSoFar + 1, reached);
+                }
+                if (!reached.Keys.Contains(start.Left().ToString()))
+                {
+                    IsReachableRecursive(start.Left(), end, stepsSoFar + 1, reached);
+                }
+                if (!reached.Keys.Contains(start.Right().ToString()))
+                {
+                    IsReachableRecursive(start.Right(), end, stepsSoFar + 1, reached);
+                }
+                if (!reached.Keys.Contains(start.Down().ToString()))
+                {
+                    IsReachableRecursive(start.Down(), end, stepsSoFar + 1, reached);
+                }
+            }
+            */
 
             /// <summary>
             /// Is this unit next to an enemy?  If so, return the ID of the unit that it should attack.
@@ -127,6 +332,11 @@ namespace RMays.Aoc2018
                         }
                     }
                 }
+            }
+
+            private Spot GetSpot(Coords coords)
+            {
+                return this.spotGrid[coords.Row, coords.Col];
             }
 
             private static Spot GetSpotFromChar(char spot)
@@ -202,6 +412,71 @@ namespace RMays.Aoc2018
             }
 
             #endregion
+        }
+
+        public class PathData : IComparable<PathData>, IEquatable<PathData>, ICloneable
+        {
+            public int Steps => Directions.Count();
+            public List<Direction> Directions { get; set; }
+
+            public PathData()
+            {
+                Directions = new List<Direction>();
+            }
+
+            public void Push(Direction dir)
+            {
+                Directions.Add(dir);
+            }
+
+            public Direction Pop()
+            {
+                var toReturn = Directions.Last();
+                Directions.RemoveAt(Directions.Count - 1);
+                return toReturn;
+            }
+
+            public Direction PopFirst()
+            {
+                var toReturn = Directions.First();
+                Directions.RemoveAt(0);
+                return toReturn;
+            }
+
+            public int CompareTo(PathData other)
+            {
+                if (this.Steps < other.Steps) return -1;
+                if (this.Steps > other.Steps) return 1;
+                for (int i = 0; i < this.Steps; i++)
+                {
+                    if (this.Directions[i] < other.Directions[i]) return -1;
+                    if (this.Directions[i] > other.Directions[i]) return 1;
+                }
+                return 0;
+            }
+
+            public bool Equals(PathData other)
+            {
+                return (this.CompareTo(other) == 0);
+            }
+
+            public object Clone()
+            {
+                return new PathData { Directions = this.Directions.ToList() };
+            }
+
+            public override string ToString()
+            {
+                return $"{Steps}: {string.Join("", this.Directions.Select(x => x.ToString()[0]).ToArray())}";
+            }
+        }
+
+        public enum Direction
+        {
+            Up = 0,
+            Left = 1,
+            Right = 2,
+            Down = 3
         }
 
         [Flags]
