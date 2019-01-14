@@ -149,11 +149,6 @@ namespace RMays.Aoc2018
                     CycleToFind.RemoveAt(0);
                     CycleToFind.Add(sumDiff);
                 }
-                else if (generations > 20000)
-                {
-                    // Takes too long!
-                    return -1;
-                }
             }
 
             return PlantSum();
