@@ -16,11 +16,28 @@ namespace RMays.Aoc2018
             public List<Unit> Units { get; set; }
             public int TicksCompleted { get; set; } = 0;
             public bool CombatDone =>
-                TicksCompleted > 1 ||
+                TicksCompleted > 9999 ||
+                (EndIfElfDies && ElfDied) ||
                 Units.Where(x => x.IsAlive).Select(x => x.UnitType).Distinct().Count() <= 1;
-            public int CombatScore => TicksCompleted * Units.Where(x => x.IsAlive).Sum(x => x.HP);
+            public int CombatScore => (EndIfElfDies && ElfDied ? 0 : 1) * (TicksCompleted) * Units.Where(x => x.IsAlive).Sum(x => x.HP);
+            private bool EndIfElfDies = false;
+            private bool ElfDied => Units.Any(x => !x.IsAlive && x.UnitType == UnitType.Elf);
+            private UnitFactory unitFactory;
 
             public Grid(string input)
+            {
+                unitFactory = new UnitFactory();
+                ReadGrid(input);
+            }
+
+            public Grid(string input, int elfPower)
+            {
+                EndIfElfDies = true;
+                unitFactory = new UnitFactory { ElfAP = elfPower };
+                ReadGrid(input);
+            }
+
+            private void ReadGrid(string input)
             {
                 int numRows;
                 int numCols;
@@ -32,13 +49,26 @@ namespace RMays.Aoc2018
                 InitializeGrid(charGrid);
             }
 
+            private Unit GetUnitById(int id)
+            {
+                return Units.Where(x => x.Id == id).First();
+            }
+
             public void ProcessTick()
             {
-                var unitIds = Units.OrderBy(x => x.Row).ThenBy(x => x.Col).Select(x => x.Id).ToList();
+                var unitIds = Units.OrderBy(x => x.Row).ThenBy(x => x.Col).Select(x => x.Id).ToArray().ToList();
 
                 foreach (var id in unitIds)
                 {
-                    ProcessUnit(Units.Where(x => x.Id == id).First());
+                    var unit = GetUnitById(id);
+                    if (unit.IsAlive)
+                    {
+                        if (CombatDone)
+                        {
+                            return;
+                        }
+                        ProcessUnit(unit);
+                    }
                 }
 
                 TicksCompleted++;
@@ -124,18 +154,38 @@ namespace RMays.Aoc2018
                 var allReachableSpots = GetReachableSpots(new Coords { Row = unit.Row, Col = unit.Col });
                 var reachableSpots = allReachableSpots.Keys
                     .Where(x => coordTargets.Select(y => y.ToString()).Contains(x.ToString()))
+                    .Select(x => x.ToString()).ToList();
+                //var reachableSpots2 = allReachableSpots.Where(x => reachableSpots.Key.Select(yContainsContains(x.))
+                var allReachableSpots2 = allReachableSpots.Where(x => reachableSpots.Contains(x.Key.ToString())).Select(x => x.Value)
+                    .OrderBy(x => x.Steps)
+                    .ThenBy(x => x.Directions[0])
                     .ToList();
-
-
-
-
-                /*
-                int steps;
-                if (IsReachable(new Coords { Row = unit.Row, Col = unit.Col }, coordTargets[0], out steps))
+                if (allReachableSpots2.Any())
                 {
-                    // Great!  We can reach it in 'steps' steps.
+                    if (allReachableSpots2.Count > 1)
+                    {
+                        int dummy = 999;
+                    }
+                    var directionToMove = allReachableSpots2.First().Directions.First();
+                    spotGrid[unit.Row, unit.Col] = Spot.Space;
+                    var selfSpot = unit.UnitType == UnitType.Elf ? Spot.Elf : Spot.Goblin;
+                    switch (directionToMove)
+                    {
+                        case Direction.Up:
+                            unit.Row--;
+                            break;
+                        case Direction.Left:
+                            unit.Col--;
+                            break;
+                        case Direction.Right:
+                            unit.Col++;
+                            break;
+                        case Direction.Down:
+                            unit.Row++;
+                            break;
+                    }
+                    spotGrid[unit.Row, unit.Col] = selfSpot;
                 }
-                */
             }
 
             private Dictionary<Coords, PathData> GetReachableSpots(Coords start)
@@ -205,84 +255,7 @@ namespace RMays.Aoc2018
                 GetReachableSpotsRecursive(start.Down(), (PathData)pathSoFar.Clone(), reached);
                 pathSoFar.Pop();
             }
-
-            /*
-            /// <summary>
-            /// How many steps will it take to reach the target?
-            /// Stop counting at a non-space.
-            /// </summary>
-            /// <param name="start"></param>
-            /// <param name="end"></param>
-            /// <returns></returns>
-            private bool IsReachable(Coords start, Coords end, out int steps)
-            {
-                // Base case check.
-                if (start == end)
-                {
-                    steps = 0;
-                    return true;
-                }
-
-                // Let's not worry about optimization yet.  The simple solution might be good enough.
-                var reached = new Dictionary<string, int>();
-                reached.Add(start.ToString(), 0);
-                IsReachableRecursive(start.Up(), end, 1, reached);
-                IsReachableRecursive(start.Left(), end, 1, reached);
-                IsReachableRecursive(start.Right(), end, 1, reached);
-                IsReachableRecursive(start.Down(), end, 1, reached);
-
-                steps = (reached.Keys.Contains(end.ToString()) ? reached[end.ToString()] : -1);
-                return reached.Keys.Contains(end.ToString());
-            }
-
-            private void IsReachableRecursive(Coords start, Coords end, int stepsSoFar, Dictionary<string, int> reached)
-            {
-                // If this is already in the dictionary, jump out.
-                if (reached.Keys.Contains(start.ToString()))
-                {
-                    if (reached[start.ToString()] <= stepsSoFar)
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        reached.Remove(start.ToString());
-                    }
-                }
-
-                reached.Add(start.ToString(), stepsSoFar);
-
-                // If we reached the end, jump out.  (No need to build up the rest of the dictionary.)
-                if (start == end)
-                {
-                    return;
-                }
-
-                // If we're not on a space, jump out.
-                if (GetSpot(start) != Spot.Space)
-                {
-                    return;
-                }
-
-                if (!reached.Keys.Contains(start.Up().ToString()))
-                {
-                    IsReachableRecursive(start.Up(), end, stepsSoFar + 1, reached);
-                }
-                if (!reached.Keys.Contains(start.Left().ToString()))
-                {
-                    IsReachableRecursive(start.Left(), end, stepsSoFar + 1, reached);
-                }
-                if (!reached.Keys.Contains(start.Right().ToString()))
-                {
-                    IsReachableRecursive(start.Right(), end, stepsSoFar + 1, reached);
-                }
-                if (!reached.Keys.Contains(start.Down().ToString()))
-                {
-                    IsReachableRecursive(start.Down(), end, stepsSoFar + 1, reached);
-                }
-            }
-            */
-
+            
             /// <summary>
             /// Is this unit next to an enemy?  If so, return the ID of the unit that it should attack.
             /// </summary>
@@ -293,25 +266,31 @@ namespace RMays.Aoc2018
                 var lookingFor = (unit.UnitType == UnitType.Elf ? Spot.Goblin : Spot.Elf);
                 // As a shortcut, assume the unit isn't on the edge.
 
-                if (spotGrid[unit.Row - 1, unit.Col] == lookingFor)
+                var coordsToCheck = new List<Coords>
                 {
-                    return Units.Where(x => x.IsAlive && x.Row == unit.Row - 1 && x.Col == unit.Col).First().Id;
-                }
-                if (spotGrid[unit.Row, unit.Col - 1] == lookingFor)
-                {
-                    return Units.Where(x => x.IsAlive && x.Row == unit.Row && x.Col == unit.Col - 1).First().Id;
-                }
-                if (spotGrid[unit.Row, unit.Col + 1] == lookingFor)
-                {
-                    return Units.Where(x => x.IsAlive && x.Row == unit.Row && x.Col == unit.Col + 1).First().Id;
-                }
-                if (spotGrid[unit.Row + 1, unit.Col] == lookingFor)
-                {
-                    return Units.Where(x => x.IsAlive && x.Row == unit.Row + 1 && x.Col == unit.Col).First().Id;
-                }
-                return -1;
-            }
+                    new Coords { Row = unit.Row - 1, Col = unit.Col },
+                    new Coords { Row = unit.Row, Col = unit.Col - 1 },
+                    new Coords { Row = unit.Row, Col = unit.Col + 1 },
+                    new Coords { Row = unit.Row + 1, Col = unit.Col }
+                };
 
+                var unitsWeCanAttack = new List<Unit>();
+
+                foreach(var coords in coordsToCheck)
+                {
+                    if (spotGrid[coords.Row, coords.Col] == lookingFor)
+                    {
+                        unitsWeCanAttack.Add(Units.Where(x => x.IsAlive && x.Row == coords.Row && x.Col == coords.Col).First());
+                    }
+                }
+
+                if (unitsWeCanAttack.Count() == 0)
+                {
+                    return -1;
+                }
+
+                return unitsWeCanAttack.OrderBy(x => x.HP).ThenBy(x => x.Row).ThenBy(x => x.Col).First().Id;
+            }
 
             #region Good so far
 
@@ -328,7 +307,10 @@ namespace RMays.Aoc2018
                         spotGrid[row, col] = spot;
                         if (spot == Spot.Goblin || spot == Spot.Elf)
                         {
-                            Units.Add(new Unit(spot) { Id = Units.Count(), Row = row, Col = col });
+                            var unitToAdd = unitFactory.CreateUnit(spot);
+                            unitToAdd.Row = row;
+                            unitToAdd.Col = col;
+                            Units.Add(unitToAdd);
                         }
                     }
                 }
@@ -382,6 +364,12 @@ namespace RMays.Aoc2018
                     {
                         toReturn.Append(GetCharFromSpot(spotGrid[row, col]));
                     }
+
+                    toReturn.Append("   ");
+                    toReturn.Append(string.Join(", ",
+                        Units.Where(x => x.IsAlive && x.Row == row).OrderBy(x => x.Col).Select(x => (x.UnitType == UnitType.Elf ? "E" : "G") + $"({x.HP})").ToArray()
+                    ));
+
                     toReturn.AppendLine();
                 }
                 return toReturn.ToString();
@@ -497,6 +485,51 @@ namespace RMays.Aoc2018
             Goblin
         }
 
+        public class UnitFactory
+        {
+            public int ElfAP = 3;
+            public int GoblinAP = 3;
+            private int NextId = 0;
+
+            public UnitFactory()
+            {
+            }
+
+            private Unit CreateDefault()
+            {
+                return new Unit { HP = 200, Id = NextId++ };
+            }
+
+            public Unit CreateUnit(Spot spot)
+            {
+                switch (spot)
+                {
+                    case Spot.Elf:
+                        return CreateElf();
+                    case Spot.Goblin:
+                        return CreateGoblin();
+                    default:
+                        return CreateDefault();
+                }
+            }
+
+            public Unit CreateElf()
+            {
+                var unit = CreateDefault();
+                unit.UnitType = UnitType.Elf;
+                unit.AP = ElfAP;
+                return unit;
+            }
+
+            public Unit CreateGoblin()
+            {
+                var unit = CreateDefault();
+                unit.UnitType = UnitType.Goblin;
+                unit.AP = GoblinAP;
+                return unit;
+            }
+        }
+
         public class Unit
         {
             public UnitType UnitType { get; set; }
@@ -516,6 +549,8 @@ namespace RMays.Aoc2018
             public int AP { get; set; }
 
             public Unit() { }
+
+            /*
             public Unit(UnitType unitType)
             {
                 switch (unitType)
@@ -555,10 +590,11 @@ namespace RMays.Aoc2018
                 this.HP = 200;
                 this.AP = 3;
             }
+            */
 
             public override string ToString()
             {
-                return $"{(UnitType == UnitType.Goblin ? "Gobin" : "Elf")} ({Row},{Col})";
+                return $"{(UnitType == UnitType.Goblin ? "Gobin" : "Elf")} ({Row},{Col}) {(IsAlive ? HP + " HP" : "DEAD")}";
             }
         }
 
@@ -569,17 +605,30 @@ namespace RMays.Aoc2018
             while (!myGrid.CombatDone)
             {
                 myGrid.ProcessTick();
+                Console.WriteLine($"After {myGrid.TicksCompleted} rounds:");
+                Console.WriteLine(myGrid);
             }
 
             return myGrid.CombatScore;
         }
 
-        public long SolveB(string input)
+        public long SolveB(string input, int elfPower)
         {
-            var myList = Parser.Tokenize(input);
-      
+            var myGrid = new Grid(input, elfPower);
+            //Console.WriteLine(myGrid);
+            while (!myGrid.CombatDone)
+            {
+                myGrid.ProcessTick();
+                /*
+                Console.WriteLine($"After {myGrid.TicksCompleted} rounds:");
+                Console.WriteLine(myGrid);
+                */
+            }
 
-            return 0;
+            Console.WriteLine($"After {myGrid.TicksCompleted} rounds:");
+            Console.WriteLine(myGrid);
+
+            return myGrid.CombatScore;
         }
     }
 }

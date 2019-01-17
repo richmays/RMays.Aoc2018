@@ -66,27 +66,50 @@ namespace RMays.Aoc2018.Tests
         }
 
         [Test]
-        [TestCase("4, 5, 6", 456)]
-
-        public void PartBTests(string input, int expectedOutput)
+        public void DoItA() // 264384, found after 4 minutes.  yikes.
         {
-            var day = new Day15b();
-            var result = day.SolveB(input);
-            Assert.AreEqual(expectedOutput, result);
-        }
-
-        [Test]
-        public void DoItA() // ?
-        {
+            //return;
             var day = new Day15b();
             Console.WriteLine(day.SolveA(InputData.Day15));
         }
 
         [Test]
-        public void DoItB() // ?
+        public void DoItB() // 67022, 22 minutes.  AP = 20
         {
+            // 1 - 200
+            // 2 - 100
+            // 3 - 67
+            // 4 - 50
+            // 5 - 40
+            // 6 - 34
+            // 7 - 29
+            // 8 - 25
+            // 9 - 23
+            // 10 - 20
+            // 11 - 19
+            // 12 - 17
+            // 13 - 16
+            // 14 - 15
+
+            var elfAps = new List<int> {
+                3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
+                15, 16, 17, 19, 20, 23, 25, 29, 34, 40, 50, 67,
+                100, 200 };
+
             var day = new Day15b();
-            Console.WriteLine(day.SolveB(InputData.Day15));
+            foreach (var i in elfAps)
+            {
+                var result = day.SolveB(InputData.Day15, i);
+                if (result > 0)
+                {
+                    Console.WriteLine($"Success with AP {i}!");
+                    Console.WriteLine(result);
+                    return;
+                }
+                Console.WriteLine($"With AP {i}, an elf died.");
+            }
+
+            
         }
 
         [TestCase(1, 1, 2, 2, -1)]
