@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RMays.Aoc2018
 {
-    public class Coords
+    public class Coords : IEquatable<Coords>, IComparable<Coords>
     {
         public Coords()
         {
@@ -41,6 +41,20 @@ namespace RMays.Aoc2018
         public Coords Right()
         {
             return new Coords(Row, Col + 1);
+        }
+
+        public bool Equals(Coords other)
+        {
+            return this.Row == other.Row && this.Col == other.Col;
+        }
+
+        public int CompareTo(Coords other)
+        {
+            if (this.Row < other.Row) return -1;
+            if (this.Col < other.Col) return -1;
+            if (this.Row > other.Row) return 1;
+            if (this.Col > other.Col) return 1;
+            return 0;
         }
     }
 }
