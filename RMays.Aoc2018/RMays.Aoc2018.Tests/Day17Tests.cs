@@ -19,6 +19,16 @@ x=506, y=1..2
 x=498, y=10..13
 x=504, y=10..13
 y=13, x=498..504", 57)]
+        [TestCase(@"x=495, y=12..17
+y=17, x=495..501
+x=501, y=13..17
+x=498, y=12..14
+x=506, y=11..12
+x=498, y=20..23
+x=504, y=20..23
+y=23, x=498..504", 57)]
+        [TestCase(@"y=10, x=499..501
+x=515, y=8..9", 8)]
         public void PartATests(string input, int expectedOutput)
         {
             var day = new Day17();
@@ -27,24 +37,14 @@ y=13, x=498..504", 57)]
         }
 
         [Test]
-        [TestCase("4, 5, 6", 456)]
-
-        public void PartBTests(string input, int expectedOutput)
-        {
-            var day = new Day17();
-            var result = day.SolveB(input);
-            Assert.AreEqual(expectedOutput, result);
-        }
-
-        [Test]
-        public void DoItA() // ?
+        public void DoItA() // 30495.  nice visualization: https://dylanowen.github.io/advent-of-code-2018/17/
         {
             var day = new Day17();
             Console.WriteLine(day.SolveA(InputData.Day17));
         }
 
         [Test]
-        public void DoItB() // ?
+        public void DoItB() // 24899
         {
             var day = new Day17();
             Console.WriteLine(day.SolveB(InputData.Day17));

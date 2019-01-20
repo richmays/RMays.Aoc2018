@@ -17,9 +17,194 @@ namespace RMays.Aoc2018
 
             public int ColOffset { get; set; }
 
+            /// <summary>
+            /// There's no walls above this line.  (Used for calculating the number of water tiles.)
+            /// </summary>
+            public int MinRow { get; set; }
+
             public Grid(string input)
             {
                 ReadGrid(input);
+            }
+
+            public long TotalWaterTiles()
+            {
+                long count = 0;
+                for(var r = this.MinRow; r < Rows; r++)
+                {
+                    for (var c = 0; c < Cols; c ++)
+                    {
+                        if (GetSpot(r,c) == Spot.Water || GetSpot(r, c) == Spot.FlowingWater)
+                        {
+                            count++;
+                        }
+
+                    }
+                }
+
+                return count;
+            }
+
+            public long CapturedWaterTiles()
+            {
+                long count = 0;
+                for (var r = this.MinRow; r < Rows; r++)
+                {
+                    for (var c = 0; c < Cols; c++)
+                    {
+                        if (GetSpot(r, c) == Spot.Water)
+                        {
+                            count++;
+                        }
+
+                    }
+                }
+
+                return count;
+            }
+
+            private void SetSpot(int row, int col, Spot spot)
+            {
+                if (row >= Rows) return;
+                if (GetSpot(row, col) == Spot.Wall)
+                {
+                    // We have a problem!
+                    throw new ApplicationException("Tried to turn a wall into water!  Can't do that.");
+                }
+
+                spotGrid[row, col] = spot;
+            }
+
+            private void SetSpot(Coords coord, Spot spot)
+            {
+                SetSpot(coord.Row, coord.Col, spot);
+            }
+
+            private Spot GetSpot(int row, int col)
+            {
+                if (row >= Rows) return Spot.Space;
+                return spotGrid[row, col];
+            }
+
+            private Spot GetSpot(Coords coord)
+            {
+                return GetSpot(coord.Row, coord.Col);
+            }
+
+            public void Flow()
+            {
+                var OuterFlowingWaters = new List<Coords> {
+                    new Coords(0, 500 - ColOffset)
+                };
+                SetSpot(0, 500 - ColOffset, Spot.FlowingWater);
+
+                int overflowCounter = 0;
+                int maxOverflowCounter = int.MaxValue - 1;
+                while (OuterFlowingWaters.Any() && OuterFlowingWaters.Count < 10000 && overflowCounter < maxOverflowCounter)
+                {
+                    overflowCounter++;
+                    var flowWaterSpot = OuterFlowingWaters.ToArray().First();
+                    OuterFlowingWaters.Remove(flowWaterSpot);
+
+                    if (flowWaterSpot.Row >= Rows) continue;
+
+                    // Jump out if it already turned into water.
+                    if (GetSpot(flowWaterSpot) == Spot.Water) continue;
+                    
+                    // Just grab any of the outer flowing water spots.
+                    // Water spreads; if it spreads to a hole (look left, then look right),
+                    // add them to the OuterFlowingWater list.
+                    var col = flowWaterSpot.Col;
+                    var row = flowWaterSpot.Row;
+                    var colDiff = 0;
+
+                    // Look left.
+                    var hitLeftWall = false;
+                    var spotToCheck = GetSpot(row + 1, col);
+                    while (spotToCheck == Spot.Water || spotToCheck == Spot.Wall)
+                    {
+                        colDiff--;
+                        if (GetSpot(row, col + colDiff) == Spot.Wall)
+                        {
+                            // We're done; we found a wall, so don't look left any more.
+                            hitLeftWall = true;
+                            break;
+                        }
+                        SetSpot(row, col + colDiff, Spot.FlowingWater);
+                        spotToCheck = GetSpot(row + 1, col + colDiff);
+                    }
+
+                    if (!hitLeftWall)
+                    {
+                        // Flow down.
+                        SetSpot(row + 1, col + colDiff, Spot.FlowingWater);
+                        OuterFlowingWaters.Add(new Coords(row + 1, col + colDiff));
+                    }
+
+                    var hitRightWall = false;
+                    // Look right, if we didn't fall straight down.
+                    if (colDiff < 0)
+                    {
+                        // Look right.
+                        colDiff = 0;
+                        spotToCheck = GetSpot(row + 1, col);
+                        while (spotToCheck == Spot.Water || spotToCheck == Spot.Wall)
+                        {
+                            colDiff++;
+                            if (GetSpot(row, col + colDiff) == Spot.Wall)
+                            {
+                                // We're done; we found a wall, so don't look right any more.
+                                hitRightWall = true;
+                                break;
+                            }
+                            SetSpot(row, col + colDiff, Spot.FlowingWater);
+                            spotToCheck = GetSpot(row + 1, col + colDiff);
+                        }
+
+                        if (!hitRightWall)
+                        {
+                            // Flow down.
+                            SetSpot(row + 1, col + colDiff, Spot.FlowingWater);
+                            OuterFlowingWaters.Add(new Coords(row + 1, col + colDiff));
+                        }
+                    }
+
+                    // Check if we're trapped.
+                    if (hitLeftWall && hitRightWall)
+                    {
+                        colDiff = 0;
+
+                        // Turn this whole row of flowing water into standing water.    
+                        while (GetSpot(row, col + colDiff) == Spot.FlowingWater)
+                        {
+                            SetSpot(row, col + colDiff, Spot.Water);
+                            // If the row above is flowing water, add it to the list to check.
+                            if (GetSpot(row - 1, col + colDiff) == Spot.FlowingWater)
+                            {
+                                OuterFlowingWaters.Add(new Coords(row - 1, col + colDiff));
+                            }
+                            colDiff--;
+                        }
+
+                        colDiff = 1;
+                        // Turn this whole row of flowing water into standing water.
+                        while (GetSpot(row, col + colDiff) == Spot.FlowingWater)
+                        {
+                            SetSpot(row, col + colDiff, Spot.Water);
+                            // If the row above is flowing water, add it to the list to check.
+                            if (GetSpot(row - 1, col + colDiff) == Spot.FlowingWater)
+                            {
+                                OuterFlowingWaters.Add(new Coords(row - 1, col + colDiff));
+                            }
+                            colDiff++;
+                        }
+                    }
+                }
+
+                if (OuterFlowingWaters.Count >= 10000 || overflowCounter >= maxOverflowCounter)
+                {
+                    throw new ApplicationException("Infinite loop detected; jumping out.");
+                }
             }
 
             internal class LineData
@@ -71,6 +256,7 @@ namespace RMays.Aoc2018
                 this.ColOffset = minCol - 1;
                 this.Rows = maxRow + 1;
                 this.Cols = maxCol - minCol + 3;
+                this.MinRow = minRow;
 
                 spotGrid = new Spot[Rows, Cols];
 
@@ -101,13 +287,15 @@ namespace RMays.Aoc2018
             {
                 Space = 0,
                 Wall = 1,
-                Water = 2
+                Water = 2,
+                FlowingWater = 3
             }
 
             public override string ToString()
             {
                 var toReturn = new StringBuilder();
 
+                /*
                 // Print row 0
                 for (var col = 0; col < Cols; col++)
                 {
@@ -121,13 +309,15 @@ namespace RMays.Aoc2018
                     }
                 }
                 toReturn.AppendLine();
+                */
+                toReturn.AppendLine();
 
                 // Print the rest of the rows.
-                for (var row = 1; row < Rows; row++)
+                for (var row = MinRow; row < Rows; row++)
                 {
                     for (var col = 0; col < Cols; col++)
                     {
-                        toReturn.Append(GetCharFromSpot(spotGrid[row, col]));
+                        toReturn.Append(GetCharFromSpot(GetSpot(row, col)));
                     }
                     toReturn.AppendLine();
                 }
@@ -144,6 +334,8 @@ namespace RMays.Aoc2018
                         return 'X';
                     case Spot.Water:
                         return '~';
+                    case Spot.FlowingWater:
+                        return '|';
                 }
                 return '?';
             }
@@ -151,22 +343,18 @@ namespace RMays.Aoc2018
 
         public long SolveA(string input)
         {
+            var grid = new Grid(input);
+            grid.Flow();
 
-            Grid grid = new Grid(input);
-            var lines = Parser.TokenizeLines(input);
-
-
-
-
-            return 0;
+            return grid.TotalWaterTiles();
         }
 
         public long SolveB(string input)
         {
-            var myList = Parser.Tokenize(input);
-      
+            var grid = new Grid(input);
+            grid.Flow();
 
-            return 0;
+            return grid.CapturedWaterTiles();
         }
     }
 }

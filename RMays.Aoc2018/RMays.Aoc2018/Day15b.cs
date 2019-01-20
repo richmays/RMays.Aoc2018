@@ -162,10 +162,6 @@ namespace RMays.Aoc2018
                     .ToList();
                 if (allReachableSpots2.Any())
                 {
-                    if (allReachableSpots2.Count > 1)
-                    {
-                        int dummy = 999;
-                    }
                     var directionToMove = allReachableSpots2.First().Directions.First();
                     spotGrid[unit.Row, unit.Col] = Spot.Space;
                     var selfSpot = unit.UnitType == UnitType.Elf ? Spot.Elf : Spot.Goblin;
