@@ -26,6 +26,8 @@ namespace RMays.Aoc2018
             private int CurrRowGrid => (CurrRow * 2) + (RowOffset * 2) + 1;
             private int CurrColGrid => (CurrCol * 2) + (ColOffset * 2) + 1;
 
+            private List<Coords> CoordStack;
+
             /// <summary>
             /// True = wall, False = clear
             /// </summary>
@@ -43,6 +45,7 @@ namespace RMays.Aoc2018
                 }
 
                 cells[CurrRowGrid, CurrColGrid] = false;
+                CoordStack = new List<Coords>();
             }
 
             public override string ToString()
@@ -57,9 +60,17 @@ namespace RMays.Aoc2018
                         {
                             sb.Append('X');
                         }
+                        else if (cells[row, col])
+                        {
+                            sb.Append('#');
+                        }
+                        else if (row % 2 == 1 && col % 2 == 1)
+                        {
+                            sb.Append('.');
+                        }
                         else
                         {
-                            sb.Append(cells[row, col] ? '#' : '.');
+                            sb.Append(' ');
                         }
                     }
                     sb.Append(Environment.NewLine);
@@ -261,6 +272,63 @@ namespace RMays.Aoc2018
                         break;
                 }
             }
+
+            public void PushCoords()
+            {
+                CoordStack.Add(new Coords(CurrRow, CurrCol));
+            }
+
+            public void PopCoords()
+            {
+                var lastCoords = CoordStack.Last();
+                CurrRow = lastCoords.Row;
+                CurrCol = lastCoords.Col;
+                CoordStack.RemoveAt(CoordStack.Count - 1);
+            }
+
+            public void Build(string input)
+            {
+                // ^ENWWW(NEEE|SSE(EE|N))$
+                foreach (var c in input.ToCharArray())
+                {
+                    switch(c)
+                    {
+                        case '^':
+                            break;
+                        case '$':
+                            // All done!
+                            MoveToCell(0, 0);
+                            return;
+                        case 'N':
+                            Move(Direction.North);
+                            break;
+                        case 'S':
+                            Move(Direction.South);
+                            break;
+                        case 'E':
+                            Move(Direction.East);
+                            break;
+                        case 'W':
+                            Move(Direction.West);
+                            break;
+                        case '(':
+                            PushCoords();
+                            break;
+                        case ')':
+                            PopCoords();
+                            break;
+                        case '|':
+                            PopCoords();
+                            PushCoords();
+                            break;
+                    }
+                }
+            }
+
+            public int GetLongestPath()
+            {
+                return -1;
+            }
         }
 
         public enum Direction
@@ -271,18 +339,11 @@ namespace RMays.Aoc2018
             West
         }
 
-
         public long SolveA(string input)
         {
             var grid = new Grid();
-            grid.Move(Direction.North);
-            grid.Move(Direction.South);
-            grid.Move(Direction.South);
-            grid.Move(Direction.East);
-            grid.Move(Direction.West);
-            grid.Move(Direction.West);
-
-            return 0;
+            grid.Build(input);
+            return grid.GetLongestPath();
         }
 
         public long SolveB(string input)
