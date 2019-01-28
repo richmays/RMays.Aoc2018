@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RMays.Aoc2018
 {
-    public class Coords : IEquatable<Coords>, IComparable<Coords>
+    public class Coords : IEquatable<Coords>, IComparable<Coords>, ICloneable
     {
         public Coords()
         {
@@ -55,6 +55,11 @@ namespace RMays.Aoc2018
             if (this.Row > other.Row) return 1;
             if (this.Col > other.Col) return 1;
             return 0;
+        }
+
+        public object Clone()
+        {
+            return new Coords(this.Row, this.Col);
         }
     }
 }
