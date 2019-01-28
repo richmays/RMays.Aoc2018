@@ -325,9 +325,89 @@ namespace RMays.Aoc2018
                 }
             }
 
-            public int GetLongestPath()
+            public bool GetGridCell(int gridRow, int gridCol)
             {
-                return -1;
+                return cells[gridRow, gridCol];
+            }
+
+            public bool GetGridCell(Coords coord)
+            {
+                return cells[coord.Row, coord.Col];
+            }
+
+            public int GetLongestPath(int doorThreshold = -1)
+            {
+                // what's my algorithm?
+                // list 1: cells that might have exits i haven't explored yet.  (start with room 0,0)
+                // list 2: cells that i just came from.
+
+                // increment the overall counter.
+                // for each cell in list 1:
+                //   if list 1 is empty, return the overall counter / 2.
+                //   for each adjacent cell, if it's NOT in list 2, then add it to 'new list 1'.
+                // clear list 2.
+                // add all cells from list 1 to list 2.
+                // add all cells from 'new list 1' to list 1.
+                // repeat!
+
+                // sounds simple.  but will it work?
+
+                var currCoords = new List<Coords>();
+                var prevCoords = new List<Coords>();
+                int steps = 0;
+                int cellsAfterThreshold = (doorThreshold == 0 ? 1 : 0);
+                MoveToCell(0, 0);
+                currCoords.Add(new Coords(CurrRowGrid, CurrColGrid));
+                while (currCoords.Any())
+                {
+                    var newCurrCoords = new List<Coords>();
+                    foreach (var coord in currCoords)
+                    {
+                        if (!GetGridCell(coord.Up()) && !prevCoords.Contains(coord.Up()))
+                        {
+                            newCurrCoords.Add(coord.Up());
+                        }
+                        if (!GetGridCell(coord.Down()) && !prevCoords.Contains(coord.Down()))
+                        {
+                            newCurrCoords.Add(coord.Down());
+                        }
+                        if (!GetGridCell(coord.Left()) && !prevCoords.Contains(coord.Left()))
+                        {
+                            newCurrCoords.Add(coord.Left());
+                        }
+                        if (!GetGridCell(coord.Right()) && !prevCoords.Contains(coord.Right()))
+                        {
+                            newCurrCoords.Add(coord.Right());
+                        }
+                    }
+
+                    prevCoords.Clear();
+                    foreach(var coord in currCoords)
+                    {
+                        prevCoords.Add((Coords)coord.Clone());
+                    }
+
+                    currCoords.Clear();
+                    foreach(var coord in newCurrCoords)
+                    {
+                        if ((steps % 2 == 1) && ((steps + 1) / 2 >= doorThreshold))
+                        {
+                            cellsAfterThreshold++;
+                        }
+                        currCoords.Add((Coords)coord.Clone());
+                    }
+
+                    steps++;
+                }
+
+                if (doorThreshold == -1)
+                {
+                    return (steps - 1) / 2;
+                }
+                else
+                {
+                    return cellsAfterThreshold;
+                }
             }
         }
 
@@ -346,12 +426,11 @@ namespace RMays.Aoc2018
             return grid.GetLongestPath();
         }
 
-        public long SolveB(string input)
+        public long SolveB(string input, int doorThreshold)
         {
-            var myList = Parser.Tokenize(input);
-      
-
-            return 0;
+            var grid = new Grid();
+            grid.Build(input);
+            return grid.GetLongestPath(doorThreshold);
         }
     }
 }

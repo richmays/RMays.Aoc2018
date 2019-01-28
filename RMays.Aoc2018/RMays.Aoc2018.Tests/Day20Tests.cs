@@ -23,28 +23,39 @@ namespace RMays.Aoc2018.Tests
             Assert.AreEqual(expectedOutput, result);
         }
 
-        /*
         [Test]
-        [TestCase("4, 5, 6", 456)]
-        public void PartBTests(string input, int expectedOutput)
+        public void PartAActual()
         {
             var day = new Day20();
-            var result = day.SolveB(input);
+            var result = day.SolveA(InputData.Day20);
+            Assert.AreEqual(4025, result);
+        }
+
+        [TestCase("^WNE$", 0, 4)]
+        [TestCase("^WNE$", 1, 3)]
+        [TestCase("^WNE$", 2, 2)]
+        [TestCase("^WNE$", 3, 1)]
+        [TestCase("^WNE$", 4, 0)]
+        [TestCase("^WNE$", 100, 0)]
+        public void PartBTests(string input, int doorThreshold, int expectedOutput)
+        {
+            var day = new Day20();
+            var result = day.SolveB(input, doorThreshold);
             Assert.AreEqual(expectedOutput, result);
         }
-        */
 
         [Test]
-        public void DoItA() // ?
+        public void DoItA() // 4025 , algorithm worked on the first try.  one of my greatest achievements ever.  :)
         {
             var day = new Day20();
             Console.WriteLine(day.SolveA(InputData.Day20));
         }
 
-        public void DoItB() // ?
+        [Test]
+        public void DoItB() // 8186, wrote some good tests for the simple 4-cell grid, did some tricky math, and solve it with my first guess.
         {
             var day = new Day20();
-            Console.WriteLine(day.SolveB(InputData.Day20));
+            Console.WriteLine(day.SolveB(InputData.Day20, 1000));
         }
     }
 }
