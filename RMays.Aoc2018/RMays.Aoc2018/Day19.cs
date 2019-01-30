@@ -106,11 +106,42 @@ namespace RMays.Aoc2018
                 }
             }
 
-            public void Go()
+            public long MinValue_Day21 { get; set; }
+            public long MaxValue_Day21 { get; set; }
+
+            public void Go(bool day21 = false, bool day21OnlyMinValue = false)
             {
+                //var found = new List<long>();
+                var bigArray = new bool[16777216];
+                long prevStep1 = 0;
+                long prevStep2 = 0;
                 //var UniqueStates = new HashSet<string>();
                 while (Memory[InstructionPtr] >= 0 && Memory[InstructionPtr] < Instructions.Count)
                 {
+                    if (day21)
+                    {
+                        if ((int)Memory[InstructionPtr] == 28)
+                        {
+                            var mem = GetMemory(5);
+                            if (MinValue_Day21 == 0)
+                            {
+                                MinValue_Day21 = mem;
+                                if (day21OnlyMinValue)
+                                {
+                                    return;
+                                }
+                            }
+                            prevStep1 = prevStep2;
+                            prevStep2 = mem;
+                            if (bigArray[mem])
+                            {
+                                MaxValue_Day21 = prevStep1;
+                                return;
+                            }
+                            bigArray[mem] = true;
+                        }
+                    }
+
                     var currInstruction = Instructions[(int)Memory[InstructionPtr]];
 
                     switch (currInstruction.Code)
