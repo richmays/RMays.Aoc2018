@@ -27,16 +27,6 @@ seti 9 0 5", 7)]
         }
 
         [Test]
-        [TestCase("4, 5, 6", 456)]
-
-        public void PartBTests(string input, int expectedOutput)
-        {
-            var day = new Day19();
-            var result = day.SolveB(input);
-            Assert.AreEqual(expectedOutput, result);
-        }
-
-        [Test]
         public void DoItA() // 1008 (sum of factors of 943)
         {
             var day = new Day19();
