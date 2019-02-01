@@ -11421,6 +11421,10 @@ eqrr 5 0 4
 addr 4 1 1
 seti 5 5 1";
         #endregion
+        #region Day22
+        public const string Day22 = @"depth: 11541
+target: 14,778";
+        #endregion
         #region Day25
         public const string Day25 = @"-6,-5,7,7
 -4,5,-1,3
