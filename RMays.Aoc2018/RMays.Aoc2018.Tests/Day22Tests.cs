@@ -20,17 +20,23 @@ target: 10,10", 114)]
             Assert.AreEqual(expectedOutput, result);
         }
 
-        /*
         [Test]
-        [TestCase("4, 5, 6", 456)]
-
+        [TestCase(@"depth: 510
+target: 10,10", 45)]
         public void PartBTests(string input, int expectedOutput)
         {
             var day = new Day22();
             var result = day.SolveB(input);
             Assert.AreEqual(expectedOutput, result);
         }
-        */
+
+        [Test]
+        public void PartATest_Real()
+        {
+            var day = new Day22();
+            var result = day.SolveA(InputData.Day22);
+            Assert.AreEqual(11575, result);
+        }
 
         [Test]
         public void DoItA() // 11575, not too tricky
