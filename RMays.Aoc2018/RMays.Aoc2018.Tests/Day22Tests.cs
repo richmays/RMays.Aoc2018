@@ -25,6 +25,7 @@ target: 10,10", 114)]
 target: 10,10", 45)]
         public void PartBTests(string input, int expectedOutput)
         {
+            // requires:  ExtendX >= 1, ExtendY >= 3
             var day = new Day22();
             var result = day.SolveB(input);
             Assert.AreEqual(expectedOutput, result);
@@ -39,16 +40,24 @@ target: 10,10", 45)]
         }
 
         [Test]
-        public void DoItA() // 11575, not too tricky
+        public void DoItA() // 11575, not too tricky.
         {
             var day = new Day22();
             Console.WriteLine(day.SolveA(InputData.Day22));
         }
 
-        public void DoItB() // ?
+        [Test]
+        public void DoItB() // 1068. took a LONG time.  my current algorithm is terrible.  :(  finally solved by increasing the width / depth of the search area.
         {
+            // Extend(12,12) = 1072 (too high)
+            // Extend(15,15) = 1068 (22s)
+            // Extend(25,25) = 1068 (29s)
+
             var day = new Day22();
-            Console.WriteLine(day.SolveB(InputData.Day22));
+            var result = day.SolveB(InputData.Day22);
+            Console.WriteLine(result);
+            Assert.AreNotEqual(1076, result);
+            Assert.IsTrue(result < 1069);
         }
     }
 }
