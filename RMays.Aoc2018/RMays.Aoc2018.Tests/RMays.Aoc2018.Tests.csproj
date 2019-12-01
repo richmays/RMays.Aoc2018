@@ -86,6 +86,7 @@
   <ItemGroup>
     <Compile Include="DataPredictorTests.cs" />
     <Compile Include="Day24Tests.cs" />
+    <Compile Include="Day1_2019Tests.cs" />
     <Compile Include="Day23Tests.cs" />
     <Compile Include="Day22Tests.cs" />
     <Compile Include="Day21Tests.cs" />
